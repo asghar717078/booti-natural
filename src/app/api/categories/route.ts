@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
-import { categories, products } from '@/lib/data';
-import { formatCategory } from '@/lib/api-utils';
+import { client } from '@/lib/sanity';
+import { formatSanityCategory } from '@/lib/api-utils';
+import { allCategoriesQuery } from '@/lib/queries';
 
 export async function GET() {
-  const mappedCategories = categories.map(cat => {
-    const productCount = products.filter(p => p.categoryId === cat.id).length;
-    return { ...formatCategory(cat), product_count: productCount };
-  });
-  return NextResponse.json(mappedCategories);
+  try {
+    const categories = await client.fetch(allCategoriesQuery);
+    return NextResponse.json(categories.map(formatSanityCategory));
+  } catch (error) {
+    console.error('[GET /api/categories]', error);
+    return NextResponse.json({ detail: 'Failed to fetch categories' }, { status: 500 });
+  }
 }

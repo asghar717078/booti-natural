@@ -6,11 +6,12 @@ import { useCart } from '@/context/CartContext';
 import { Star, ShieldCheck, Truck, Droplets, Minus, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Product {
-  id: number;
+  id: number | string;
   name: string;
   price: string | number;
   description: string;
   image?: string;
+  images?: { image: string }[];
 }
 
 const getUnsplashImage = (name: string) => {
@@ -59,7 +60,7 @@ export default function ProductDetailPage() {
         const allRes = await fetch(`/api/products/`);
         if (allRes.ok) {
           const allData = await allRes.json();
-          const related = allData.filter((p: Product) => p.id !== Number(id)).slice(0, 2);
+          const related = allData.filter((p: Product) => String(p.id) !== String(id)).slice(0, 2);
           setRelatedProducts(related);
         }
       } catch (error) {
@@ -87,13 +88,15 @@ export default function ProductDetailPage() {
   const originalPrice = numericPrice + 300;
 
   const handleAddToCart = () => {
-    addToCart({
-      id: Number(product.id),
-      name: product.name,
-      price: currentPrice,
-      image: product.image || getUnsplashImage(product.name),
-      quantity: quantity
-    });
+    // addToCart adds 1 per call; call it `quantity` times to respect selector
+    for (let i = 0; i < quantity; i++) {
+      addToCart({
+        id: String(product.id),
+        name: product.name,
+        price: currentPrice,
+        image: product.image || getUnsplashImage(product.name),
+      });
+    }
   };
 
   const handleBuyNow = () => {
@@ -167,17 +170,24 @@ export default function ProductDetailPage() {
               {product.name}
             </h1>
 
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mt-2 mb-6">
               <div className="flex text-gold">
                 {[1, 2, 3, 4, 5].map(i => <Star key={i} size={16} fill="currentColor" />)}
               </div>
-              <span className="text-gray-500 text-sm font-medium">({(Number(id) * 17) % 150 + 45} reviews)</span>
+              <span className="text-gray-700 font-medium">
+                Trusted by 50,000+ Families
+              </span>
             </div>
 
-            <div className="flex items-end gap-3 mb-2">
-              <span className="text-gray-400 text-lg line-through decoration-gray-300">Rs. {originalPrice.toLocaleString()}.00 PKR</span>
-              <span className="text-[26px] font-bold text-dark-green">Rs. {currentPrice.toLocaleString()}.00 PKR</span>
-              <span className="bg-gold text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm mb-2">
+            <div className="flex items-baseline gap-2 flex-wrap mb-2">
+              <span className="text-gray-400 line-through text-sm sm:text-base">
+                Rs. {originalPrice.toLocaleString('en-PK', {minimumFractionDigits: 2, maximumFractionDigits: 2})} PKR
+              </span>
+              <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1B3B1A]">
+                Rs. {currentPrice.toLocaleString('en-PK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+              </span>
+              <span className="text-sm sm:text-base font-medium text-[#1B3B1A]">PKR</span>
+              <span className="ml-2 px-2 py-0.5 bg-[#D4A017] text-white text-[10px] font-bold rounded-full uppercase tracking-wider shadow-sm">
                 Sale
               </span>
             </div>
@@ -204,12 +214,7 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            <div className="flex flex-col items-center justify-center gap-1 mb-8">
-              <div className="flex text-gold">
-                {[1, 2, 3, 4, 5].map(i => <Star key={i} size={14} fill="currentColor" />)}
-              </div>
-              <span className="text-sm font-bold text-dark-green">Trusted by 50,000+ Families</span>
-            </div>
+
 
             {/* Quantity Selector */}
             <div className="mb-6">

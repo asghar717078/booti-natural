@@ -8,12 +8,14 @@ interface Product {
   [key: string]: unknown;
 }
 
-async function getProducts(category?: string) {
+async function getProducts(category?: string, isNew?: string) {
   try {
     let url = 'http://localhost:3000/api/products/';
-    if (category) {
-      url += `?category=${category}`;
-    }
+    const params = new URLSearchParams();
+    if (category) params.set('category', category);
+    if (isNew === 'true') params.set('is_new', 'true');
+    const queryString = params.toString();
+    if (queryString) url += `?${queryString}`;
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return [];
     return res.json();
@@ -26,16 +28,24 @@ async function getProducts(category?: string) {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: { category?: string };
+  searchParams: { category?: string; is_new?: string };
 }) {
   const category = searchParams.category;
-  const products = await getProducts(category);
+  const isNew = searchParams.is_new;
+  const products = await getProducts(category, isNew);
+
+  let pageTitle = 'All Products';
+  if (category) {
+    pageTitle = category.charAt(0).toUpperCase() + category.slice(1).replace(/-/g, ' ');
+  } else if (isNew === 'true') {
+    pageTitle = 'New Arrivals';
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-10 text-center">
         <h1 className="text-4xl font-poppins font-bold text-dark-green mb-4">
-          {category ? `${category.charAt(0).toUpperCase() + category.slice(1).replace('-', ' ')}` : 'All Products'}
+          {pageTitle}
         </h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Browse our collection of 100% organic and natural health products. 

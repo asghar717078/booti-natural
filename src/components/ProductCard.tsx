@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Star } from 'lucide-react';
 
 interface ProductCardProps {
-  id: number;
+  id: string | number;
   name: string;
   price: string | number;
   image?: string;
@@ -68,16 +68,15 @@ export default function ProductCard({ id, name, price, image }: ProductCardProps
                 <Star key={star} size={12} fill="currentColor" className="text-gold" />
               ))}
             </div>
-            <span className="text-gray-400 text-xs font-medium">({(id * 17) % 150 + 45})</span>
           </div>
           
           <div className="mt-auto flex flex-col">
-            <span className="text-gray-400 text-xs font-medium line-through mb-0.5">
-              Rs. {originalPrice.toLocaleString()}.00 PKR
-            </span>
-            <p className="text-[18px] font-bold text-dark-green">
-              From Rs. {numericPrice.toLocaleString()}.00 PKR
-            </p>
+            <div className="text-xs text-gray-400 line-through mb-0.5">
+              Rs. {originalPrice.toLocaleString('en-PK', {minimumFractionDigits: 2, maximumFractionDigits: 2})} PKR
+            </div>
+            <div className="text-base sm:text-lg font-bold text-[#1B3B1A]">
+              From Rs. {numericPrice.toLocaleString('en-PK', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </div>
           </div>
         </div>
       </div>

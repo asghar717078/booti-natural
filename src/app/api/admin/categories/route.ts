@@ -1,25 +1,35 @@
 import { NextResponse } from 'next/server';
-import { categories, products } from '@/lib/data';
-import { formatCategory } from '@/lib/api-utils';
+import { client, writeClient } from '@/lib/sanity';
+import { formatSanityCategory } from '@/lib/api-utils';
+import { allCategoriesQuery } from '@/lib/queries';
 
 export async function GET() {
-  const mappedCategories = categories.map(cat => {
-    const productCount = products.filter(p => p.categoryId === cat.id).length;
-    return { ...formatCategory(cat), product_count: productCount };
-  });
-  return NextResponse.json(mappedCategories);
+  try {
+    const categories = await client.fetch(allCategoriesQuery);
+    return NextResponse.json(categories.map(formatSanityCategory));
+  } catch (error) {
+    console.error('[GET /api/admin/categories]', error);
+    return NextResponse.json({ detail: 'Failed to fetch categories' }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const newCat = {
-      id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
-      ...body
+
+    const doc = {
+      _type: 'category',
+      name: body.name,
+      slug: body.slug
+        ? { _type: 'slug', current: body.slug }
+        : { _type: 'slug', current: body.name?.toLowerCase().replace(/\s+/g, '-') },
+      description: body.description ?? '',
     };
-    categories.push(newCat);
-    return NextResponse.json(formatCategory(newCat), { status: 201 });
+
+    const created = await writeClient.create(doc);
+    return NextResponse.json(formatSanityCategory(created), { status: 201 });
   } catch (error) {
-    return NextResponse.json({ detail: 'Invalid data' }, { status: 400 });
+    console.error('[POST /api/admin/categories]', error);
+    return NextResponse.json({ detail: 'Failed to create category' }, { status: 400 });
   }
 }

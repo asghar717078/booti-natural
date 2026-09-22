@@ -1,19 +1,31 @@
 import { NextResponse } from 'next/server';
-import { orders } from '@/lib/data';
-import { formatOrder } from '@/lib/api-utils';
+import { writeClient, client } from '@/lib/sanity';
+import { formatSanityOrder } from '@/lib/api-utils';
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const index = orders.findIndex(o => o.id === parseInt(params.id));
-  if (index === -1) return NextResponse.json({ detail: 'Not found' }, { status: 404 });
-  
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const body = await request.json();
-    if (body.status) {
-      orders[index].status = body.status;
-      orders[index].updatedAt = new Date().toISOString();
-    }
-    return NextResponse.json(formatOrder(orders[index]));
+    const patch: Record<string, any> = {};
+
+    if (body.status) patch.status = body.status;
+    if (body.notes !== undefined) patch.notes = body.notes;
+
+    await writeClient.patch(params.id).set(patch).commit();
+
+    const updated = await client.fetch(
+      `*[_type == "order" && _id == $id][0]{
+        _id, customerName, customerEmail, phone, address, city, postalCode,
+        items, total, status, paymentMethod, notes, _createdAt
+      }`,
+      { id: params.id }
+    );
+
+    return NextResponse.json(formatSanityOrder(updated));
   } catch (error) {
-    return NextResponse.json({ detail: 'Invalid data' }, { status: 400 });
+    console.error('[PUT /api/admin/orders/[id]]', error);
+    return NextResponse.json({ detail: 'Failed to update order' }, { status: 400 });
   }
 }

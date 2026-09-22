@@ -5,6 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ClientProviders from "@/components/ClientProviders";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import { headers } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const poppins = Poppins({
@@ -20,25 +21,22 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "Booti Natural - Premium Organic Health Products",
-  description: "Your trusted source for 100% organic and natural health products like Ashwagandha, Moringa, and various seeds.",
+  description:
+    "Your trusted source for 100% organic and natural health products.",
 };
+
+import SiteChrome from "@/components/SiteChrome";
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${poppins.variable} ${playfair.variable} font-inter antialiased bg-cream text-gray-800 flex flex-col min-h-screen`}>
+      <body
+        className={`${inter.variable} ${poppins.variable} ${playfair.variable} font-inter antialiased bg-cream text-gray-800 flex flex-col min-h-screen`}
+      >
         <ClientProviders>
-          <AnnouncementBar />
-          
-          <Header />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer />
+          <SiteChrome>{children}</SiteChrome>
         </ClientProviders>
       </body>
     </html>

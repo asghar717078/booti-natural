@@ -40,6 +40,17 @@ export default function Footer() {
               <li><Link href="/products" className="hover:text-gold transition-colors hover:translate-x-1 inline-block transform duration-300">Shop All</Link></li>
               <li><Link href="/contact" className="hover:text-gold transition-colors hover:translate-x-1 inline-block transform duration-300">Contact Us</Link></li>
               <li><Link href="#" className="hover:text-gold transition-colors hover:translate-x-1 inline-block transform duration-300">Our Blog</Link></li>
+              <li>
+                <Link 
+                  href="/admin/login" 
+                  className="hover:text-gold transition-colors hover:translate-x-1 inline-flex items-center gap-1 transform duration-300"
+                >
+                  Admin
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </li>
             </ul>
           </div>
 

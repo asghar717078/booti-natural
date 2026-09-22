@@ -257,7 +257,7 @@ export default function CheckoutPage() {
   );
 }
 
-function OrderSummaryContent({ items, cartTotal, shipping, finalTotal }: { items: { id: number, name: string, price: string|number, quantity: number, image?: string, variant?: string }[], cartTotal: number, shipping: number, finalTotal: number }) {
+function OrderSummaryContent({ items, cartTotal, shipping, finalTotal }: { items: { id: string|number, name: string, price: string|number, quantity: number, image?: string, variant?: string }[], cartTotal: number, shipping: number, finalTotal: number }) {
   return (
     <div className="p-6 md:p-0">
       

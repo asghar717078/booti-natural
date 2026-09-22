@@ -5,10 +5,14 @@ import { Search, ShoppingCart, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
+import SearchModal from './SearchModal';
+import MobileMenu from './MobileMenu';
 
 export default function Header() {
   const [imageError, setImageError] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { cartCount, setIsCartOpen } = useCart();
 
   useEffect(() => {
@@ -26,8 +30,19 @@ export default function Header() {
     <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md border-b border-gray-100' : 'bg-transparent border-b border-transparent'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-[80px]">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
+          {/* Mobile Hamburger & Logo */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="md:hidden p-2 -ml-2 text-dark-green hover:text-gold transition-colors"
+              aria-label="Open menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            
+            <div className="flex-shrink-0 flex items-center">
             <Link href="/">
               {!imageError ? (
                 <img 
@@ -41,6 +56,7 @@ export default function Header() {
               )}
             </Link>
           </div>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
@@ -48,6 +64,7 @@ export default function Header() {
               const href = item === 'Home' ? '/' : 
                            item === 'All Products' ? '/products' : 
                            item === 'Contact' ? '/contact' : 
+                           item === 'New Arrivals' ? '/products?is_new=true' :
                            `/products?category=${item.toLowerCase().replace(' ', '-')}`;
               
               return (
@@ -65,7 +82,7 @@ export default function Header() {
 
           {/* Icons */}
           <div className={`flex items-center space-x-6 ${scrolled ? 'text-gray-700' : 'text-dark-green'}`}>
-            <button className="hover:text-gold transition-all hover:scale-110" aria-label="Search">
+            <button onClick={() => setIsSearchOpen(true)} className="hover:text-gold transition-all hover:scale-110" aria-label="Search">
               <Search size={22} />
             </button>
             <button 
@@ -86,6 +103,8 @@ export default function Header() {
           </div>
         </div>
       </div>
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
     </header>
   );
 }
