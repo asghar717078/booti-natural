@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Minus, Plus, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect } from 'react';
-
+ 
 // Reusing fallback image logic for the drawer
 const getFallbackImage = (name: string) => {
   const nameLower = name?.toLowerCase() || '';
