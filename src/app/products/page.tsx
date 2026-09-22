@@ -8,19 +8,23 @@ interface Product {
   [key: string]: unknown;
 }
 
+import { client } from '@/lib/sanity';
+import { formatSanityProduct } from '@/lib/api-utils';
+import { allProductsQuery, newArrivalsQuery, productsByCategoryQuery } from '@/lib/queries';
+
 async function getProducts(category?: string, isNew?: string) {
   try {
-    let url = 'http://localhost:3000/api/products/';
-    const params = new URLSearchParams();
-    if (category) params.set('category', category);
-    if (isNew === 'true') params.set('is_new', 'true');
-    const queryString = params.toString();
-    if (queryString) url += `?${queryString}`;
-    const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return [];
-    return res.json();
+    let products = [];
+    if (isNew === 'true') {
+      products = await client.fetch(newArrivalsQuery);
+    } else if (category) {
+      products = await client.fetch(productsByCategoryQuery, { categorySlug: category });
+    } else {
+      products = await client.fetch(allProductsQuery);
+    }
+    return products.map(formatSanityProduct);
   } catch (error) {
-    console.error("Failed to fetch products:", error);
+    console.error("Failed to fetch products from Sanity:", error);
     return [];
   }
 }
