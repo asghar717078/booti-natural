@@ -10,21 +10,27 @@ interface Product {
   [key: string]: unknown;
 }
 
-async function getProducts() {
-  try {
-    const res = await fetch('http://localhost:3000/api/products/', { cache: 'no-store' });
-    if (!res.ok) return [];
-    return res.json();
-  } catch (error) {
-    console.error("Failed to fetch products:", error);
-    return [];
-  }
-}
+import { client } from '@/lib/sanity';
+import { formatSanityProduct } from '@/lib/api-utils';
+import { allProductsQuery, newArrivalsQuery } from '@/lib/queries';
+
+export const revalidate = 60;
 
 export default async function Home() {
-  const products = await getProducts();
-  const newArrivals = products.filter((p: Product) => p.is_new).slice(0, 3);
-  const allProducts = products.slice(0, 8);
+  let newArrivals = [];
+  let allProducts = [];
+
+  try {
+    const [newArrivalsRaw, allProductsRaw] = await Promise.all([
+      client.fetch(newArrivalsQuery),
+      client.fetch(allProductsQuery),
+    ]);
+    
+    newArrivals = newArrivalsRaw.map(formatSanityProduct).slice(0, 3);
+    allProducts = allProductsRaw.map(formatSanityProduct).slice(0, 8);
+  } catch (error) {
+    console.error("Failed to fetch products from Sanity:", error);
+  }
 
   return (
     <div className="bg-cream">
