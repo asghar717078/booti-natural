@@ -102,13 +102,13 @@ export default defineType({
   preview: {
     select: {
       title: 'customerName',
-      status: 'status',
+      subtitle: 'status',
       total: 'total',
     },
-    prepare({ title, status, total }) {
+    prepare({ title, subtitle, total }) {
       return {
         title: title || 'Unknown customer',
-        subtitle: `${status?.toUpperCase()} — Rs. ${total?.toLocaleString() ?? 0}`,
+        subtitle: `${(subtitle || 'pending').toUpperCase()} — Rs. ${total || 0}`,
       };
     },
   },

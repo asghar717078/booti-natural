@@ -50,33 +50,58 @@ export default function CheckoutPage() {
     if (cartItems.length === 0) return alert('Your cart is empty');
     
     setIsSubmitting(true);
-    
+
     try {
-      const response = await fetch('/api/orders', {
+      const orderData = {
+        customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+        customerEmail: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        paymentMethod: paymentMethod,
+        items: cartItems.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        subtotal: cartTotal,
+        shipping: shippingMethod,
+        total: finalTotal,
+      };
+
+      console.log('Sending order:', orderData);
+
+      const res = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...formData,
-          paymentMethod,
-          items: cartItems,
-          subtotal: cartTotal,
-          shipping: shippingMethod,
-          total: finalTotal
-        })
+        body: JSON.stringify(orderData),
       });
-      
-      const data = await response.json();
-      
-      if (response.ok && data._id) {
-        clearCart();
-        router.push(`/order-success/${data._id}`);
-      } else {
-        alert('Error placing order: ' + (data.detail || data.error || 'Unknown error'));
-        setIsSubmitting(false);
+
+      console.log('Response status:', res.status);
+      const responseText = await res.text();
+      console.log('Response body:', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error(`Invalid JSON response: ${responseText.substring(0, 200)}`);
       }
-    } catch (error) {
-      console.error(error);
-      alert('Network error. Please try again.');
+
+      if (!res.ok) {
+        throw new Error(data.error || data.detail || `Server error: ${res.status}`);
+      }
+
+      console.log('Order created:', data._id || data.orderId || data.id);
+      clearCart();
+      router.push(`/order-success/${data._id || data.orderId || data.id}`);
+
+    } catch (error: any) {
+      console.error('Order failed:', error);
+      alert(`Order failed: ${error.message}`);
       setIsSubmitting(false);
     }
   };
