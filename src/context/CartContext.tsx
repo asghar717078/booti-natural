@@ -21,6 +21,8 @@ interface CartContextType {
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
   clearCart: () => void;
+  specialInstructions: string;
+  setSpecialInstructions: (notes: string) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -29,6 +31,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [specialInstructions, setSpecialInstructions] = useState('');
 
   // Load from local storage on mount
   useEffect(() => {
@@ -98,7 +101,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       cartTotal,
       isCartOpen,
       setIsCartOpen,
-      clearCart
+      clearCart,
+      specialInstructions,
+      setSpecialInstructions
     }}>
       {children}
     </CartContext.Provider>

@@ -20,7 +20,7 @@ const getFallbackImage = (name: string) => {
 };
 
 export default function CartDrawer() {
-  const { isCartOpen, setIsCartOpen, cartItems, updateQuantity, removeFromCart, cartTotal } = useCart();
+  const { isCartOpen, setIsCartOpen, cartItems, updateQuantity, removeFromCart, cartTotal, specialInstructions, setSpecialInstructions } = useCart();
 
   useEffect(() => {
     if (isCartOpen) {
@@ -176,6 +176,8 @@ export default function CartDrawer() {
                   <textarea 
                     id="drawer-instructions" 
                     placeholder="Order special instructions"
+                    value={specialInstructions}
+                    onChange={(e) => setSpecialInstructions(e.target.value)}
                     className="w-full h-[80px] border border-gray-300 rounded-lg p-3 text-[13px] focus:ring-1 focus:ring-dark-green focus:border-dark-green outline-none resize-none placeholder:text-gray-400"
                   ></textarea>
                 </div>

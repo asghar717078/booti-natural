@@ -21,7 +21,7 @@ const getFallbackImage = (name: string) => {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, cartTotal, cartCount, setIsCartOpen, clearCart } = useCart();
+  const { cartItems, cartTotal, cartCount, setIsCartOpen, clearCart, specialInstructions } = useCart();
   const [shippingMethod] = useState(250);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [billingAddress, setBillingAddress] = useState('same');
@@ -70,6 +70,7 @@ export default function CheckoutPage() {
         subtotal: cartTotal,
         shipping: shippingMethod,
         total: finalTotal,
+        notes: specialInstructions,
       };
 
       console.log('Sending order:', orderData);

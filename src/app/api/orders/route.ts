@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { writeClient } from '@/lib/sanity';
 import { formatSanityOrder } from '@/lib/api-utils';
+import { sendOrderEmails } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +23,8 @@ export async function POST(request: Request) {
         quantity: Number(item.quantity ?? 1),
         image: item.image ?? '',
       })),
+      subtotal: Number(body.subtotal ?? body.total ?? 0),
+      shipping: Number(body.shipping ?? 0),
       total: Number(body.total ?? body.total_amount ?? 0),
       status: 'pending',
       paymentMethod: body.payment_method ?? body.paymentMethod ?? 'cod',
@@ -30,6 +33,21 @@ export async function POST(request: Request) {
     };
 
     const created = await writeClient.create(doc);
+    
+    // Decrement stock for all items
+    if (doc.items.length > 0) {
+      const transaction = writeClient.transaction();
+      doc.items.forEach((item: any) => {
+        if (item.productId) {
+          transaction.patch(item.productId, (p) => p.setIfMissing({ stock: 0 }).dec({ stock: item.quantity }));
+        }
+      });
+      await transaction.commit().catch(console.error); // don't block response if it fails
+    }
+    
+    // Trigger emails in background
+    sendOrderEmails(doc).catch(console.error);
+
     return NextResponse.json(formatSanityOrder(created), { status: 201 });
   } catch (error) {
     console.error('[POST /api/orders]', error);

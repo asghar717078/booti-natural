@@ -4,28 +4,21 @@ import imageUrlBuilder from '@sanity/image-url';
 export const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-01-01',
-  useCdn: true, // false in API routes that write data
+  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION!,
+  useCdn: false,
+  perspective: 'published',
 });
 
-// Server-side client with write token (for API routes)
 export const writeClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
-  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-01-01',
+  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION!,
   useCdn: false,
-  token: process.env.SANITY_API_TOKEN,
+  token: process.env.SANITY_API_TOKEN!,
 });
 
-// Image URL builder
 const builder = imageUrlBuilder(client);
 
-export function urlFor(source: any | null | undefined) {
-  if (!source) {
-    return {
-      url: () => '',
-      width: (_w: number) => ({ url: () => '' }),
-    };
-  }
+export function urlFor(source: any) {
   return builder.image(source);
 }
