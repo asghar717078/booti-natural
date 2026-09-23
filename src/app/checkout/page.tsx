@@ -2,8 +2,9 @@
 
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
-import { ShoppingCart, ChevronRight, Lock, Truck, Undo2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShoppingCart, ChevronRight, Lock, Truck, Undo2, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 // Specific Unsplash Mapping from user request
 const getFallbackImage = (name: string) => {
@@ -19,13 +20,66 @@ const getFallbackImage = (name: string) => {
 };
 
 export default function CheckoutPage() {
-  const { cartItems, cartTotal, cartCount, setIsCartOpen } = useCart();
+  const router = useRouter();
+  const { cartItems, cartTotal, cartCount, setIsCartOpen, clearCart } = useCart();
   const [shippingMethod] = useState(250);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [billingAddress, setBillingAddress] = useState('same');
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [formData, setFormData] = useState({
+    email: '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    apartment: '',
+    city: '',
+    postalCode: '',
+    phone: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
   
   const finalTotal = cartTotal + shippingMethod;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (cartItems.length === 0) return alert('Your cart is empty');
+    
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          paymentMethod,
+          items: cartItems,
+          subtotal: cartTotal,
+          shipping: shippingMethod,
+          total: finalTotal
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok && data._id) {
+        clearCart();
+        router.push(`/order-success/${data._id}`);
+      } else {
+        alert('Error placing order: ' + (data.detail || data.error || 'Unknown error'));
+        setIsSubmitting(false);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Network error. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] font-inter">
@@ -100,7 +154,7 @@ export default function CheckoutPage() {
         {/* 2. LEFT COLUMN - FORMS (55%) */}
         <div className="w-full md:w-[55%] p-6 md:p-10 md:pr-12 bg-white md:bg-transparent">
           
-          <form className="max-w-2xl mx-auto md:ml-auto md:mr-0" onSubmit={(e) => e.preventDefault()}>
+          <form className="max-w-2xl mx-auto md:ml-auto md:mr-0" onSubmit={handleSubmit}>
             
             {/* Section 1 — Contact */}
             <section className="bg-white rounded-[12px] border border-[#E5E7EB] p-6 mb-5 shadow-sm">
@@ -109,8 +163,12 @@ export default function CheckoutPage() {
                 <Link href="#" className="text-[14px] text-gold hover:underline font-medium">Log in</Link>
               </div>
               <input 
-                type="text" 
-                placeholder="Email or mobile phone number" 
+                type="email" 
+                name="email"
+                required
+                value={formData.email}
+                onChange={handleInputChange}
+                placeholder="Email address" 
                 className="w-full h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none transition-all placeholder:text-[#9CA3AF]"
               />
               <div className="flex items-center gap-3 mt-4">
@@ -136,19 +194,19 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="flex gap-4">
-                  <input type="text" placeholder="First name (optional)" className="w-1/2 h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
-                  <input type="text" placeholder="Last name" className="w-1/2 h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
+                  <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} required placeholder="First name" className="w-1/2 h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
+                  <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} required placeholder="Last name" className="w-1/2 h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
                 </div>
 
-                <input type="text" placeholder="Address" className="w-full h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
-                <input type="text" placeholder="Apartment, suite, etc. (optional)" className="w-full h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
+                <input type="text" name="address" value={formData.address} onChange={handleInputChange} required placeholder="Address" className="w-full h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
+                <input type="text" name="apartment" value={formData.apartment} onChange={handleInputChange} placeholder="Apartment, suite, etc. (optional)" className="w-full h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
                 
                 <div className="flex gap-4">
-                  <input type="text" placeholder="City" className="w-1/2 h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
-                  <input type="text" placeholder="Postal code (optional)" className="w-1/2 h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
+                  <input type="text" name="city" value={formData.city} onChange={handleInputChange} required placeholder="City" className="w-1/2 h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
+                  <input type="text" name="postalCode" value={formData.postalCode} onChange={handleInputChange} placeholder="Postal code (optional)" className="w-1/2 h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
                 </div>
 
-                <input type="tel" placeholder="Phone" className="w-full h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
+                <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required placeholder="Phone" className="w-full h-[48px] border border-[#E5E7EB] rounded-lg px-4 py-3 text-[14px] focus:border-gold focus:ring-[3px] focus:ring-gold/10 outline-none placeholder:text-[#9CA3AF]" />
                 
                 <div className="flex items-center gap-3 pt-2">
                   <input type="checkbox" id="saveInfo" className="w-[18px] h-[18px] text-gold rounded border-gray-300 focus:ring-gold accent-gold" />
@@ -236,9 +294,9 @@ export default function CheckoutPage() {
             </section>
 
             <div className="pb-16">
-              <button className="w-full h-14 bg-[#1B3B1A] text-white font-bold rounded-full hover:bg-[#2D5A2A] transition-all duration-300 text-base flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg">
-                <Lock size={18} />
-                {paymentMethod === 'cod' ? 'Complete Order' : 'Pay Now'}
+              <button disabled={isSubmitting} type="submit" className="w-full h-14 bg-[#1B3B1A] text-white font-bold rounded-full hover:bg-[#2D5A2A] transition-all duration-300 text-base flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98] shadow-md hover:shadow-lg disabled:opacity-70 disabled:pointer-events-none">
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : <Lock size={18} />}
+                {isSubmitting ? 'Processing...' : (paymentMethod === 'cod' ? 'Complete Order' : 'Pay Now')}
               </button>
             </div>
 
