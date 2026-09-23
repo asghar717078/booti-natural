@@ -23,7 +23,7 @@ export default function OrderDetailPage() {
 
   useEffect(() => {
     fetch('/api/admin/orders').then(r => r.json()).then((orders: any[]) => {
-      const found = orders.find(o => o.id === id);
+      const found = orders.find(o => o._id === id);
       if (found) { setOrder(found); setStatus(found.status); }
     }).finally(() => setLoading(false));
   }, [id]);
@@ -47,8 +47,8 @@ export default function OrderDetailPage() {
       <div className="flex items-center gap-3">
         <Link href="/admin/orders" className="p-2 rounded-xl hover:bg-gray-100 text-gray-500 hover:text-[#1B3B1A] transition-all"><ArrowLeft size={20} /></Link>
         <div>
-          <h1 className="text-2xl font-bold text-[#1B3B1A]" style={{ fontFamily: 'Playfair Display, serif' }}>Order #{order.id.slice(-8)}</h1>
-          <p className="text-gray-500 text-sm">{new Date(order.created_at).toLocaleString('en-PK')}</p>
+          <h1 className="text-2xl font-bold text-[#1B3B1A]" style={{ fontFamily: 'Playfair Display, serif' }}>Order #{order._id.slice(-8)}</h1>
+          <p className="text-gray-500 text-sm">{new Date(order.createdAt).toLocaleString('en-PK')}</p>
         </div>
       </div>
 
@@ -60,8 +60,8 @@ export default function OrderDetailPage() {
             <h2 className="font-semibold text-[#1B3B1A]" style={{ fontFamily: 'Playfair Display, serif' }}>Customer</h2>
           </div>
           <div className="space-y-2 text-sm text-gray-600">
-            <p><span className="font-medium text-gray-800">{order.customer_name}</span></p>
-            <p>{order.customer_email}</p>
+            <p><span className="font-medium text-gray-800">{order.customerName || 'Unknown Customer'}</span></p>
+            <p>{order.customerEmail}</p>
             <p>{order.phone}</p>
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function OrderDetailPage() {
           </div>
           <div className="space-y-1 text-sm text-gray-600">
             <p>{order.address}</p>
-            <p>{order.city} {order.postal_code}</p>
+            <p>{order.city} {order.postalCode}</p>
           </div>
         </div>
 
@@ -84,7 +84,7 @@ export default function OrderDetailPage() {
             <CreditCard size={16} className="text-[#D4A017]" />
             <h2 className="font-semibold text-[#1B3B1A]" style={{ fontFamily: 'Playfair Display, serif' }}>Payment</h2>
           </div>
-          <p className="text-sm text-gray-600">{order.payment_method === 'cod' ? 'Cash on Delivery' : 'Bank Transfer'}</p>
+          <p className="text-sm text-gray-600">{order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Bank Transfer'}</p>
           <p className="text-xl font-bold text-[#1B3B1A] mt-2">Rs. {order.total?.toLocaleString()}</p>
         </div>
 
@@ -148,10 +148,18 @@ export default function OrderDetailPage() {
             ))}
           </div>
         )}
-        <div className="flex justify-end px-6 py-4 border-t border-gray-100 bg-gray-50">
-          <div className="text-right">
-            <p className="text-sm text-gray-500">Total</p>
-            <p className="text-xl font-bold text-[#1B3B1A]">Rs. {order.total?.toLocaleString()}</p>
+        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 space-y-2">
+          <div className="flex justify-end gap-10 text-sm text-gray-500">
+            <span>Subtotal</span>
+            <span className="font-medium text-gray-800">Rs. {order.subtotal?.toLocaleString() || order.total?.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-end gap-10 text-sm text-gray-500">
+            <span>Shipping</span>
+            <span className="font-medium text-gray-800">Rs. {order.shipping?.toLocaleString() || '0'}</span>
+          </div>
+          <div className="flex justify-end gap-10 pt-2 mt-1 border-t border-gray-200">
+            <span className="text-sm text-gray-500 font-medium">Total</span>
+            <span className="text-xl font-bold text-[#1B3B1A]">Rs. {order.total?.toLocaleString()}</span>
           </div>
         </div>
       </div>

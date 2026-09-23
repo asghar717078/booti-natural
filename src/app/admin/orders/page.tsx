@@ -5,13 +5,13 @@ import Link from 'next/link';
 import { ShoppingCart, Filter } from 'lucide-react';
 
 interface Order {
-  id: string;
-  customer_name: string;
-  customer_email: string;
+  _id: string;
+  customerName: string;
+  customerEmail: string;
   total: number;
   status: string;
-  payment_method: string;
-  created_at: string;
+  paymentMethod: string;
+  createdAt: string;
 }
 
 const STATUSES = ['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'];
@@ -42,7 +42,7 @@ export default function AdminOrdersPage() {
       body: JSON.stringify({ status }),
     });
     if (res.ok) {
-      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+      setOrders(prev => prev.map(o => o._id === id ? { ...o, status } : o));
     }
     setUpdatingId(null);
   }
@@ -101,21 +101,21 @@ export default function AdminOrdersPage() {
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {filtered.map(order => (
-                  <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-mono text-xs text-gray-500">#{order.id.slice(-8)}</td>
+                  <tr key={order._id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 font-mono text-xs text-gray-500">#{order._id.slice(-8)}</td>
                     <td className="px-6 py-4">
-                      <p className="font-medium text-gray-800">{order.customer_name}</p>
-                      <p className="text-xs text-gray-400">{order.customer_email}</p>
+                      <p className="font-medium text-gray-800">{order.customerName}</p>
+                      <p className="text-xs text-gray-400">{order.customerEmail}</p>
                     </td>
                     <td className="px-6 py-4 font-semibold text-[#1B3B1A]">Rs. {order.total?.toLocaleString()}</td>
                     <td className="px-6 py-4 hidden sm:table-cell text-gray-500 capitalize text-xs">
-                      {order.payment_method === 'cod' ? 'Cash on Delivery' : 'Bank Transfer'}
+                      {order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Bank Transfer'}
                     </td>
                     <td className="px-6 py-4">
                       <select
                         value={order.status}
-                        disabled={updatingId === order.id}
-                        onChange={e => updateStatus(order.id, e.target.value)}
+                        disabled={updatingId === order._id}
+                        onChange={e => updateStatus(order._id, e.target.value)}
                         className={`px-2.5 py-1 rounded-lg text-xs font-semibold border capitalize cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1B3B1A]/20 ${STATUS_COLORS[order.status] ?? 'bg-gray-100 text-gray-600 border-gray-200'}`}
                       >
                         {['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => (
@@ -124,11 +124,11 @@ export default function AdminOrdersPage() {
                       </select>
                     </td>
                     <td className="px-6 py-4 hidden md:table-cell text-gray-500 text-xs">
-                      {new Date(order.created_at).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link
-                        href={`/admin/orders/${order.id}`}
+                        href={`/admin/orders/${order._id}`}
                         className="text-[#D4A017] text-xs font-semibold hover:underline"
                       >
                         View →

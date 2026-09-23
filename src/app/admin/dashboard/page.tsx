@@ -12,11 +12,11 @@ interface Stats {
 }
 
 interface Order {
-  id: string;
-  customer_name: string;
+  _id: string;
+  customerName: string;
   total: number;
   status: string;
-  created_at: string;
+  createdAt: string;
 }
 
 interface LowStockProduct {
@@ -63,7 +63,7 @@ export default function AdminDashboardPage() {
 
         setRecentOrders(
           orders
-            .sort((a: Order, b: Order) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .sort((a: Order, b: Order) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, 5)
         );
 
@@ -153,9 +153,9 @@ export default function AdminDashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => window.location.href = `/admin/orders/${order.id}`}>
-                      <td className="px-6 py-4 font-mono text-xs text-gray-500">#{order.id.slice(-8)}</td>
-                      <td className="px-6 py-4 font-medium text-gray-800">{order.customer_name}</td>
+                    <tr key={order._id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => window.location.href = `/admin/orders/${order._id}`}>
+                      <td className="px-6 py-4 font-mono text-xs text-gray-500">#{order._id.slice(-8)}</td>
+                      <td className="px-6 py-4 font-medium text-gray-800">{order.customerName}</td>
                       <td className="px-6 py-4 font-semibold text-[#1B3B1A]">Rs. {order.total?.toLocaleString()}</td>
                       <td className="px-6 py-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${STATUS_COLORS[order.status] ?? 'bg-gray-100 text-gray-600'}`}>
@@ -163,7 +163,7 @@ export default function AdminDashboardPage() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-500 text-xs">
-                        {new Date(order.created_at).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        {new Date(order.createdAt).toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </td>
                     </tr>
                   ))}

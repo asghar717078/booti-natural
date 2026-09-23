@@ -1,18 +1,39 @@
 import { NextResponse } from 'next/server';
 import { client } from '@/lib/sanity';
-import { formatSanityOrder } from '@/lib/api-utils';
 
 export async function GET() {
   try {
-    const orders = await client.fetch(
-      `*[_type == "order"] | order(_createdAt desc) {
-        _id, customerName, customerEmail, phone, address, city, postalCode,
-        items, total, status, paymentMethod, notes, _createdAt
-      }`
+    const orders = await client.fetch(`
+      *[_type == "order"] | order(createdAt desc) {
+        _id,
+        _type,
+        customerName,
+        customerEmail,
+        phone,
+        address,
+        city,
+        postalCode,
+        paymentMethod,
+        items,
+        subtotal,
+        shipping,
+        total,
+        status,
+        notes,
+        createdAt,
+        _createdAt,
+        _updatedAt
+      }
+    `);
+    
+    console.log(`Fetched ${orders.length} orders from Sanity`);
+    
+    return NextResponse.json(orders);
+  } catch (error: any) {
+    console.error('Failed to fetch orders:', error);
+    return NextResponse.json(
+      { error: error.message }, 
+      { status: 500 }
     );
-    return NextResponse.json(orders.map(formatSanityOrder));
-  } catch (error) {
-    console.error('[GET /api/admin/orders]', error);
-    return NextResponse.json({ detail: 'Failed to fetch orders' }, { status: 500 });
   }
 }
